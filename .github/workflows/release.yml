@@ -1,0 +1,45 @@
+name: Release
+
+# Fires when you push a version tag, e.g.  git tag v1.0.1 && git push origin v1.0.1
+# (Publishing a Release in the GitHub UI also creates such a tag, so that works too.)
+on:
+  push:
+    tags:
+      - "v*"
+
+# Needed so the action can create the Release and upload assets.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Derive version from tag
+        id: vars
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Sanity-check scripts parse
+        run: for f in scripts/*.js; do node --check "$f"; done
+
+      - name: Stamp version into module.json
+        run: |
+          jq --arg v "${{ steps.vars.outputs.version }}" '.version = $v' module.json > module.tmp
+          mv module.tmp module.json
+          echo "module.json version set to ${{ steps.vars.outputs.version }}"
+
+      - name: Build module.zip
+        # Files sit at the zip root (no wrapper folder) — the layout Foundry expects.
+        run: zip -r module.zip module.json scripts README.md LICENSE
+
+      - name: Publish release with assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          files: |
+            module.json
+            module.zip
+          fail_on_unmatched_files: true

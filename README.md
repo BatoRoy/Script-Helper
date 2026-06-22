@@ -65,8 +65,30 @@ fastest way to discover "what is this thing called?".
 
 ## Install
 
-Drop this folder into your Foundry `Data/modules/` directory and enable
-**Script Helper & Cheat Sheet (D&D5e)** in your world's module settings.
+In Foundry: **Setup → Add-on Modules → Install Module**, and paste this
+Manifest URL:
+
+```
+https://github.com/BatoRoy/Script-Helper/releases/latest/download/module.json
+```
+
+Then enable **Script Helper** in your world's module settings.
+
+## Releasing a new version
+
+Releases are automated by `.github/workflows/release.yml`. To cut a version,
+just push a tag:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The workflow stamps the version into `module.json`, builds `module.zip`, and
+publishes a GitHub Release with both files attached — which is what the
+`releases/latest/download/...` manifest URL points at, so Foundry picks up the
+update automatically. (You don't need to hand-edit the `version` field; the tag
+is the source of truth.)
 
 ## Pairs well with
 
